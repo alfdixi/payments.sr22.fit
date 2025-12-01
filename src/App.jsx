@@ -18,6 +18,7 @@ function App() {
   const [clientName, setClientName] = useState('')
   const [clientEmail, setClientEmail] = useState('')
   const [externalId, setExternalId] = useState('') // 👈 NUEVO
+  const [serviceLocked, setServiceLocked] = useState(false) // 👈 NUEVO
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
@@ -60,6 +61,7 @@ React.useEffect(() => {
     const exists = SERVICES.some((s) => s.id === idprod)
     if (exists) {
       setSelectedServiceId(idprod)
+      setServiceLocked(true) // 👈 BLOQUEAMOS EL SELECT
     }
   }
 }, [])
@@ -150,6 +152,7 @@ React.useEffect(() => {
             id="service"
             value={selectedServiceId}
             onChange={(e) => setSelectedServiceId(e.target.value)}
+            disabled={serviceLocked} // 👈 AQUÍ
           >
             {SERVICES.map((service) => (
               <option key={service.id} value={service.id}>
