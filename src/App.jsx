@@ -1,11 +1,33 @@
 
 import React, { useState, useMemo } from 'react'
 
-const SERVICES = [
-  { id: '1', name: 'Membresía mensual SR22', amount: 20000, currency: 'mxn' },
-  { id: '2', name: 'Clase individual', amount: 5000, currency: 'mxn' },
-  { id: '3', name: 'Sesión entrenamiento personal', amount: 8000, currency: 'mxn' },
-]
+const FORWARD_WEBHOOK_URL_AUTH = process.env.FORWARD_WEBHOOK_URL_AUTH || 'https://api.sr22.fit/auth/token';
+const GET_PRODUCTS_URL = process.env.GET_PRODUCTS_URL || 'https://api.sr22.fit/products';
+// Obtener un token de autenticación con FORWARD_WEBHOOK_URL_AUTH
+let authToken = null; 
+try {
+  const authResponse = await axios.post(FORWARD_WEBHOOK_URL_AUTH, {
+    apiKey: process.env.INTERNAL_WEBHOOK_SECRET || 'sr22-internal-api-key',
+  });
+  authToken = authResponse.data.token;
+  console.log('🔐 Token de autenticación obtenido');
+} catch (authErr) {
+  console.error('❌ Error obteniendo token de autenticación:', authErr.message);
+}
+// const SERVICES =  servicio GET  de process.env.GET_PRODUCTS_URL || 'https://api.sr22.fit/products' ;
+
+// agregar token como barear token en headers si existe
+const headers = {
+  'x-sr22-signature': process.env.X_SR22_SIGNATURE || 'sr22-dev-webhook',
+};
+if (authToken) {
+  headers['Authorization'] = `Bearer ${authToken}`;
+}
+const SERVICES = await axios.post(GET_PRODUCTS_URL, payload, {
+  headers,
+});
+
+console.log('✅ Respuesta de tu API SERVICES:', SERVICES);
 
 const formatCurrency = (amount, currency = 'mxn') =>
   new Intl.NumberFormat('es-MX', {
