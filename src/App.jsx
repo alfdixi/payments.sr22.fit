@@ -1,93 +1,142 @@
-
-import React, { useState, useMemo } from 'react'
-
-const FORWARD_WEBHOOK_URL_AUTH = process.env.FORWARD_WEBHOOK_URL_AUTH || 'https://api.sr22.fit/auth/token';
-const GET_PRODUCTS_URL = process.env.GET_PRODUCTS_URL || 'https://api.sr22.fit/products';
-// Obtener un token de autenticación con FORWARD_WEBHOOK_URL_AUTH
-let authToken = null; 
-try {
-  const authResponse = await axios.post(FORWARD_WEBHOOK_URL_AUTH, {
-    apiKey: process.env.INTERNAL_WEBHOOK_SECRET || 'sr22-internal-api-key',
-  });
-  authToken = authResponse.data.token;
-  console.log('🔐 Token de autenticación obtenido');
-} catch (authErr) {
-  console.error('❌ Error obteniendo token de autenticación:', authErr.message);
-}
-// const SERVICES =  servicio GET  de process.env.GET_PRODUCTS_URL || 'https://api.sr22.fit/products' ;
-
-// agregar token como barear token en headers si existe
-const headers = {
-  'x-sr22-signature': process.env.X_SR22_SIGNATURE || 'sr22-dev-webhook',
-};
-if (authToken) {
-  headers['Authorization'] = `Bearer ${authToken}`;
-}
-const SERVICES = await axios.post(GET_PRODUCTS_URL, payload, {
-  headers,
-});
-
-console.log('✅ Respuesta de tu API SERVICES:', SERVICES);
+import React, { useState, useMemo, useEffect } from 'react'
 
 const formatCurrency = (amount, currency = 'mxn') =>
   new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: currency.toUpperCase(),
-  }).format(amount / 100)
+  }).format(amount)
 
 function App() {
-  const [selectedServiceId, setSelectedServiceId] = useState(SERVICES[0].id)
+  console.log('🔥 App se está renderizando')
+
+  // 🔹 Estado de productos (antes SERVICES hardcodeado)
+  const [services, setServices] = useState([])
+  const [selectedServiceId, setSelectedServiceId] = useState('')
+  const [serviceLocked, setServiceLocked] = useState(false)
+
+  // 🔹 Datos del cliente
   const [clientName, setClientName] = useState('')
   const [clientEmail, setClientEmail] = useState('')
-  const [externalId, setExternalId] = useState('') // 👈 NUEVO
-  const [serviceLocked, setServiceLocked] = useState(false) // 👈 NUEVO
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [statusMessage, setStatusMessage] = useState('')
+  const [externalId, setExternalId] = useState('') // id externo
 
+  // 🔹 UI
+  const [loading, setLoading] = useState(false)
+  const [statusMessage, setStatusMessage] = useState('')
+  const [error, setError] = useState('')
+
+  // 🔹 Estado de carga de productos
+  const [loadingServices, setLoadingServices] = useState(true)
+  const [servicesError, setServicesError] = useState('')
+
+  // Gateway (donde está /create-checkout-session)
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4242'
 
+  // Base del API SR22 (auth + products)
+  const sr22ApiBase = import.meta.env.VITE_SR22_API_BASE_URL || 'https://api.sr22.fit'
+
+  // La API key para /auth/token
+  // ⚠️ En Vite, las vars que quieres en el front deben empezar con VITE_
+  const apiKeyForToken =
+    import.meta.env.VITE_API_KEY_FOR_TOKEN ||
+    import.meta.env.VITE_INTERNAL_WEBHOOK_SECRET || // por si la renombraste
+    'sr22-internal-api-key'
+
+  // Servicio seleccionado
   const selectedService = useMemo(
-    () => SERVICES.find((s) => s.id === selectedServiceId),
-    [selectedServiceId],
+    () => services.find((s) => String(s.id) === String(selectedServiceId)),
+    [services, selectedServiceId],
   )
 
-React.useEffect(() => {
-  const params = new URLSearchParams(window.location.search)
+  // 1️⃣ Leer parámetros de la URL (name, email, id, idprod, status)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
 
-  // Mensajes de estado de pago
-  const status = params.get('status')
-  if (status === 'success') {
-    setStatusMessage('✅ ¡Pago realizado con éxito! Gracias por tu compra.')
-  } else if (status === 'cancel') {
-    setStatusMessage('⚠️ El pago fue cancelado. Puedes intentarlo de nuevo cuando quieras.')
-  }
-
-  // Prefill desde query string
-  const name = params.get('name')
-  const email = params.get('email')
-  const id = params.get('id')
-  const idprod = params.get('idprod')
-
-  if (name) {
-    setClientName(name)
-  }
-  if (email) {
-    setClientEmail(email)
-  }
-  if (id) {
-    setExternalId(id)
-  }
-  // Si viene idprod y coincide con algún servicio, lo seleccionamos
-  if (idprod) {
-    const exists = SERVICES.some((s) => s.id === idprod)
-    if (exists) {
-      setSelectedServiceId(idprod)
-      setServiceLocked(true) // 👈 BLOQUEAMOS EL SELECT
+    // Mensajes de estado de pago
+    const status = params.get('status')
+    if (status === 'success') {
+      setStatusMessage('✅ ¡Pago realizado con éxito! Gracias por tu compra.')
+    } else if (status === 'cancel') {
+      setStatusMessage('⚠️ El pago fue cancelado. Puedes intentarlo de nuevo cuando quieras.')
     }
-  }
-}, [])
 
+    // Prefill desde query string
+    const name = params.get('name')
+    const email = params.get('email')
+    const id = params.get('id')
+
+    if (name) setClientName(name)
+    if (email) setClientEmail(email)
+    if (id) setExternalId(id)
+  }, [])
+
+  // 2️⃣ Cargar productos desde api.sr22.fit (auth + products) y aplicar idprod
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        setLoadingServices(true)
+        setServicesError('')
+
+        // a) Obtener token
+        const authRes = await fetch(`${sr22ApiBase}/auth/token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ apiKey: apiKeyForToken }),
+        })
+
+        if (!authRes.ok) {
+          const errData = await authRes.json().catch(() => ({}))
+          throw new Error(errData.error || 'Error al obtener token')
+        }
+
+        const { token } = await authRes.json()
+        if (!token) {
+          throw new Error('El API no devolvió token.')
+        }
+
+        // b) Obtener productos
+        const productsRes = await fetch(`${sr22ApiBase}/products`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!productsRes.ok) {
+          const errData = await productsRes.json().catch(() => ({}))
+          throw new Error(errData.error || 'Error al obtener productos')
+        }
+
+        const data = await productsRes.json()
+
+        // data esperado: [{ id: "1", name, amount, currency }, ...]
+        setServices(data || [])
+
+        // c) Revisar si vino idprod en la URL
+        const params = new URLSearchParams(window.location.search)
+        const idprod = params.get('idprod')
+
+        if (idprod) {
+          const exists = (data || []).some((s) => String(s.id) === String(idprod))
+          if (exists) {
+            setSelectedServiceId(String(idprod))
+            setServiceLocked(true)
+          } else if (data && data.length > 0) {
+            // Si idprod no existe, seleccionamos el primero
+            setSelectedServiceId(String(data[0].id))
+          }
+        } else if (data && data.length > 0) {
+          // Si no hay idprod, seleccionar el primero
+          setSelectedServiceId(String(data[0].id))
+        }
+      } catch (err) {
+        console.error('Error cargando servicios desde API:', err)
+        setServicesError(err.message || 'No se pudieron cargar los servicios')
+      } finally {
+        setLoadingServices(false)
+      }
+    }
+
+    loadServices()
+  }, [sr22ApiBase, apiKeyForToken])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -96,14 +145,16 @@ React.useEffect(() => {
     setLoading(true)
 
     try {
+      if (!selectedService) {
+        throw new Error('No hay un servicio seleccionado.')
+      }
+
       const successUrl = `${window.location.origin}?status=success`
       const cancelUrl = `${window.location.origin}?status=cancel`
-      console.log("🌐 SUCCESS URL:", successUrl)
+
       const body = {
         successUrl,
         cancelUrl,
-        // En producción es mejor NO mandar amount desde el front y sólo mandar un ID,
-        // pero para demo lo hacemos así:
         lineItems: [
           {
             price_data: {
@@ -114,7 +165,7 @@ React.useEffect(() => {
                   service_id: selectedService.id,
                   client_name: clientName,
                   client_email: clientEmail,
-                  external_id: externalId, // 👈 NUEVO
+                  external_id: externalId,
                 },
               },
               unit_amount: selectedService.amount,
@@ -123,8 +174,6 @@ React.useEffect(() => {
           },
         ],
       }
-
-      console.log("📦 PAYLOAD ENVIADO A BACKEND:", body)
 
       const res = await fetch(`${apiBaseUrl}/create-checkout-session`, {
         method: 'POST',
@@ -144,7 +193,6 @@ React.useEffect(() => {
       if (data.url) {
         window.location.href = data.url
       } else if (data.id) {
-        // Si en algún momento decides usar Stripe.js, aquí podrías usar redirectToCheckout con sessionId.
         throw new Error('La respuesta no incluyó la URL de Checkout.')
       } else {
         throw new Error('Respuesta inesperada del servidor.')
@@ -155,6 +203,32 @@ React.useEffect(() => {
     } finally {
       setLoading(false)
     }
+  }
+
+  // 🧩 Estados de carga de servicios
+  if (loadingServices) {
+    return (
+      <div className="container">
+        <h1>SR22 – Pago de servicios</h1>
+        <p>Cargando servicios...</p>
+      </div>
+    )
+  }
+
+  if (servicesError) {
+    return (
+      <div className="container">
+        <h1>SR22 – Pago de servicios</h1>
+        <div className="error-message">❌ {servicesError}</div>
+        <footer className="footer">
+          <small>
+            API pagos (gateway): <code>{apiBaseUrl}</code>
+            <br />
+            API productos: <code>{sr22ApiBase}</code>
+          </small>
+        </footer>
+      </div>
+    )
   }
 
   return (
@@ -174,9 +248,9 @@ React.useEffect(() => {
             id="service"
             value={selectedServiceId}
             onChange={(e) => setSelectedServiceId(e.target.value)}
-            disabled={serviceLocked} // 👈 AQUÍ
+            disabled={serviceLocked}
           >
-            {SERVICES.map((service) => (
+            {services.map((service) => (
               <option key={service.id} value={service.id}>
                 {service.name} – {formatCurrency(service.amount, service.currency)}
               </option>
@@ -206,12 +280,16 @@ React.useEffect(() => {
           />
         </div>
 
-        <div className="summary">
-          <span>Total a pagar:</span>
-          <strong>{formatCurrency(selectedService.amount, selectedService.currency)}</strong>
-        </div>
+        {selectedService && (
+          <div className="summary">
+            <span>Total a pagar:</span>
+            <strong>
+              {formatCurrency(selectedService.amount, selectedService.currency)}
+            </strong>
+          </div>
+        )}
 
-        <button className="pay-button" type="submit" disabled={loading}>
+        <button className="pay-button" type="submit" disabled={loading || !selectedService}>
           {loading ? 'Redirigiendo a Stripe…' : 'Pagar con Stripe'}
         </button>
 
@@ -222,7 +300,9 @@ React.useEffect(() => {
 
       <footer className="footer">
         <small>
-          API base: <code>{apiBaseUrl}</code>
+          Gateway Stripe: <code>{apiBaseUrl}</code>
+          <br />
+          API SR22: <code>{sr22ApiBase}</code>
         </small>
       </footer>
     </div>
