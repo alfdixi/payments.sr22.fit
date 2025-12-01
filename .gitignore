@@ -103,3 +103,5 @@ public
 
 # Remix build output
 .build/
+ecosystem.config.js
+package-lock.json

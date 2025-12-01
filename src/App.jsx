@@ -233,6 +233,7 @@ function App() {
 
   return (
     <div className="container">
+      <center><img src="https://admin.sr22.fit/includes/img/logo.png" alt="SR22 Logo" width="200" /></center>
       <h1>SR22 – Pago de servicios</h1>
       <p className="subtitle">
         Selecciona el servicio y realiza tu pago de forma segura con Stripe.
