@@ -4,7 +4,7 @@ const formatCurrency = (amount, currency = 'mxn') =>
   new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: currency.toUpperCase(),
-  }).format(amount)
+  }).format(amount / 100)
 
 function App() {
   console.log('🔥 App se está renderizando')
