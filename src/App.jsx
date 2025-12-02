@@ -299,9 +299,7 @@ function App() {
 
       <footer className="footer">
         <small>
-          Gateway Stripe: <code>{apiBaseUrl}</code>
-          <br />
-          API SR22: <code>{sr22ApiBase}</code>
+          https://sr22.fit
         </small>
       </footer>
     </div>
