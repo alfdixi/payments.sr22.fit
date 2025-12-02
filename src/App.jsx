@@ -12,7 +12,7 @@ function App() {
   // 🔹 Estado de productos (antes SERVICES hardcodeado)
   const [services, setServices] = useState([])
   const [selectedServiceId, setSelectedServiceId] = useState('')
-  const [serviceLocked, setServiceLocked] = useState(false)
+
 
   // 🔹 Datos del cliente
   const [clientName, setClientName] = useState('')
@@ -118,7 +118,6 @@ function App() {
           const exists = (data || []).some((s) => String(s.id) === String(idprod))
           if (exists) {
             setSelectedServiceId(String(idprod))
-            setServiceLocked(true)
           } else if (data && data.length > 0) {
             // Si idprod no existe, seleccionamos el primero
             setSelectedServiceId(String(data[0].id))
@@ -249,7 +248,6 @@ function App() {
             id="service"
             value={selectedServiceId}
             onChange={(e) => setSelectedServiceId(e.target.value)}
-            disabled={serviceLocked}
           >
             {services.map((service) => (
               <option key={service.id} value={service.id}>
