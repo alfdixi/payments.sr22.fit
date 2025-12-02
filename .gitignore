@@ -105,3 +105,6 @@ public
 .build/
 ecosystem.config.js
 package-lock.json
+dist/
+dist/*
+dist
