@@ -18,7 +18,6 @@ function App() {
 
   // 🔹 Datos del cliente
   const [clientName, setClientName] = useState('')
-  const [clientEmail, setClientEmail] = useState('')
   const [clientPhone, setClientPhone] = useState('')
   const [externalId, setExternalId] = useState('') // id externo
   const [fetchingName, setFetchingName] = useState(false);
@@ -153,8 +152,8 @@ function App() {
         throw new Error('No hay un servicio seleccionado.')
       }
 
-      const successUrl = `${window.location.origin}?status=success&name=${encodeURIComponent(clientName)}&email=${encodeURIComponent(clientEmail)}&id=${encodeURIComponent(externalId)}&idprod=${selectedService.id}`
-      const cancelUrl = `${window.location.origin}?status=cancel&name=${encodeURIComponent(clientName)}&email=${encodeURIComponent(clientEmail)}&id=${encodeURIComponent(externalId)}&idprod=${selectedService.id}`
+      const successUrl = `${window.location.origin}?status=success&name=${encodeURIComponent(clientName)}&phone=${encodeURIComponent(clientPhone)}&id=${encodeURIComponent(externalId)}&idprod=${selectedService.id}`
+      const cancelUrl = `${window.location.origin}?status=cancel&name=${encodeURIComponent(clientName)}&phone=${encodeURIComponent(clientPhone)}&id=${encodeURIComponent(externalId)}&idprod=${selectedService.id}`
 
       const body = {
         successUrl,
@@ -168,7 +167,7 @@ function App() {
                 metadata: {
                   service_id: selectedService.id,
                   client_name: clientName,
-                  client_email: clientEmail,
+                  client_phone: clientPhone,
                   external_id: externalId,
                 },
               },
