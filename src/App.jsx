@@ -22,6 +22,7 @@ function App() {
   const [clientPhone, setClientPhone] = useState('')
   const [externalId, setExternalId] = useState('') // id externo
   const [fetchingName, setFetchingName] = useState(false);
+  const [foundCustomerId, setFoundCustomerId] = useState('');
 
   // 🔹 UI
   const [loading, setLoading] = useState(false)
@@ -293,18 +294,25 @@ function App() {
                   });
                   if (phoneRes.ok) {
                     const data = await phoneRes.json();
-                    console.log('Cliente encontrado por teléfono:', data);
+                    if (data.id) setFoundCustomerId(String(data.id));
                     if (data.name) setClientName(data.name);
+                    // Si no hay servicio seleccionado, usar el id encontrado
+                    if (!selectedServiceId && data.id) {
+                      setSelectedServiceId(String(data.id));
+                    }
                   } else {
                     setClientName(''); // Limpiar si no se encuentra
+                    setFoundCustomerId('');
                   }
                 } catch (err) {
                   setClientName('');
+                  setFoundCustomerId('');
                 } finally {
                   setFetchingName(false);
                 }
               } else {
                 setClientName('');
+                setFoundCustomerId('');
               }
             }}
           >
