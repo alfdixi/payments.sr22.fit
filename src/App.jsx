@@ -293,7 +293,8 @@ function App() {
                   });
                   if (phoneRes.ok) {
                     const data = await phoneRes.json();
-                    if (data.nombre) setClientName(data.nombre);
+                    console.log('Cliente encontrado por teléfono:', data);
+                    if (data.name) setClientName(data.name);
                   } else {
                     setClientName(''); // Limpiar si no se encuentra
                   }
@@ -321,13 +322,13 @@ function App() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="clientName">Nombre del cliente (opcional)</label>
+          <label htmlFor="clientName">Nombre del cliente</label>
           <input
             id="clientName"
             type="text"
-            placeholder="Juan Pérez"
+            placeholder="Nombre"
             value={clientName}
-            onChange={(e) => setClientName(e.target.value)}
+            readOnly
           />
         </div>
 
