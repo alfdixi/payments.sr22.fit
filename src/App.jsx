@@ -351,7 +351,11 @@ function App() {
           </div>
         )}
 
-        <button className="pay-button" type="submit" disabled={loading || !selectedService}>
+        <button
+          className="pay-button"
+          type="submit"
+          disabled={loading || !selectedService || !(Number(externalId) > 0)}
+        >
           {loading ? 'Redirigiendo a Stripe…' : 'Pagar con Stripe'}
         </button>
 
