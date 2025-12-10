@@ -1,4 +1,6 @@
+
 import React, { useState, useMemo, useEffect } from 'react'
+import InputMask from 'react-input-mask';
 
 const formatCurrency = (amount, currency = 'mxn') =>
   new Intl.NumberFormat('es-MX', {
@@ -17,6 +19,7 @@ function App() {
   // 🔹 Datos del cliente
   const [clientName, setClientName] = useState('')
   const [clientEmail, setClientEmail] = useState('')
+  const [clientPhone, setClientPhone] = useState('')
   const [externalId, setExternalId] = useState('') // id externo
 
   // 🔹 UI
@@ -256,6 +259,23 @@ function App() {
             ))}
           </select>
         </div>
+        <div className="form-group">
+          <label htmlFor="clientPhone">Teléfono</label>
+          <InputMask
+            mask="99-9999-9999"
+            value={clientPhone}
+            onChange={(e) => setClientPhone(e.target.value)}
+          >
+            {(inputProps) => (
+              <input
+                {...inputProps}
+                id="clientPhone"
+                type="text"
+                placeholder="00-0000-0000"
+              />
+            )}
+          </InputMask>
+        </div>
 
         <div className="form-group">
           <label htmlFor="clientName">Nombre del cliente (opcional)</label>
@@ -268,16 +288,7 @@ function App() {
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="clientEmail">Correo electrónico (opcional)</label>
-          <input
-            id="clientEmail"
-            type="email"
-            placeholder="cliente@correo.com"
-            value={clientEmail}
-            onChange={(e) => setClientEmail(e.target.value)}
-          />
-        </div>
+        
 
         {selectedService && (
           <div className="summary">
