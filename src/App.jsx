@@ -65,11 +65,11 @@ function App() {
 
     // Prefill desde query string
     const name = params.get('name')
-    const email = params.get('email')
+    const phone = params.get('phone')
     const id = params.get('id')
 
     if (name) setClientName(name)
-    if (email) setClientEmail(email)
+    if (phone) setClientPhone(phone)
     if (id) setExternalId(id)
   }, [])
 
@@ -322,6 +322,7 @@ function App() {
                 type="text"
                 placeholder="00-0000-0000"
                 autoComplete="tel"
+                value={clientPhone}
               />
             )}
           </InputMask>
