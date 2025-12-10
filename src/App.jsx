@@ -148,8 +148,8 @@ function App() {
         throw new Error('No hay un servicio seleccionado.')
       }
 
-      const successUrl = `${window.location.origin}?status=success`
-      const cancelUrl = `${window.location.origin}?status=cancel`
+      const successUrl = `${window.location.origin}?status=success&name=${encodeURIComponent(clientName)}&email=${encodeURIComponent(clientEmail)}&id=${encodeURIComponent(externalId)}&idprod=${selectedService.id}`
+      const cancelUrl = `${window.location.origin}?status=cancel&name=${encodeURIComponent(clientName)}&email=${encodeURIComponent(clientEmail)}&id=${encodeURIComponent(externalId)}&idprod=${selectedService.id}`
 
       const body = {
         successUrl,
