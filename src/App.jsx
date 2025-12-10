@@ -293,7 +293,10 @@ function App() {
                   });
                   if (phoneRes.ok) {
                     const data = await phoneRes.json();
-                    if (data.id) setFoundCustomerId(String(data.id));
+                    if (data.id) {
+                      setFoundCustomerId(String(data.id));
+                      setExternalId(String(data.id)); // Asignar externalId para habilitar el botón
+                    }
                     if (data.name) setClientName(data.name);
                     // Si no hay servicio seleccionado, usar el id encontrado
                     if (!selectedServiceId && data.id) {
@@ -302,16 +305,19 @@ function App() {
                   } else {
                     setClientName(''); // Limpiar si no se encuentra
                     setFoundCustomerId('');
+                    setExternalId('');
                   }
                 } catch (err) {
                   setClientName('');
                   setFoundCustomerId('');
+                  setExternalId('');
                 } finally {
                   setFetchingName(false);
                 }
               } else {
                 setClientName('');
                 setFoundCustomerId('');
+                setExternalId('');
               }
             }}
           >
