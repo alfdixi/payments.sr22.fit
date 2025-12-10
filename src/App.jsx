@@ -21,6 +21,7 @@ function App() {
   const [clientEmail, setClientEmail] = useState('')
   const [clientPhone, setClientPhone] = useState('')
   const [externalId, setExternalId] = useState('') // id externo
+  const [fetchingName, setFetchingName] = useState(false);
 
   // 🔹 UI
   const [loading, setLoading] = useState(false)
@@ -264,7 +265,47 @@ function App() {
           <InputMask
             mask="99-9999-9999"
             value={clientPhone}
-            onChange={(e) => setClientPhone(e.target.value)}
+            onChange={async (e) => {
+              const value = e.target.value;
+              setClientPhone(value);
+              // Extraer solo dígitos
+              const digits = value.replace(/\D/g, '');
+              if (digits.length === 10) {
+                setFetchingName(true);
+                try {
+                  // 1. Obtener token
+                  const authRes = await fetch(`${sr22ApiBase}/auth/token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apiKey: apiKeyForToken }),
+                  });
+                  if (!authRes.ok) throw new Error('Error autenticando');
+                  const { token } = await authRes.json();
+                  if (!token) throw new Error('No se obtuvo token');
+                  // 2. Buscar cliente por teléfono
+                  const phoneRes = await fetch(`${sr22ApiBase}/costumer/find-by-phone`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ phone: value })
+                  });
+                  if (phoneRes.ok) {
+                    const data = await phoneRes.json();
+                    if (data.nombre) setClientName(data.nombre);
+                  } else {
+                    setClientName(''); // Limpiar si no se encuentra
+                  }
+                } catch (err) {
+                  setClientName('');
+                } finally {
+                  setFetchingName(false);
+                }
+              } else {
+                setClientName('');
+              }
+            }}
           >
             {(inputProps) => (
               <input
@@ -272,9 +313,11 @@ function App() {
                 id="clientPhone"
                 type="text"
                 placeholder="00-0000-0000"
+                autoComplete="tel"
               />
             )}
           </InputMask>
+          {fetchingName && <div style={{fontSize:'0.9em',color:'#888'}}>Buscando nombre…</div>}
         </div>
 
         <div className="form-group">
