@@ -247,7 +247,7 @@ function App() {
 
       <form className="card" onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="service">Servicio</label>
+          <label htmlFor="service">Servicio-</label>
           <select
             id="service"
             value={selectedServiceId}
