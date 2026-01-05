@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react'
 import InputMask from 'react-input-mask';
 
@@ -22,6 +21,7 @@ function App() {
   const [externalId, setExternalId] = useState('') // id externo
   const [fetchingName, setFetchingName] = useState(false);
   const [foundCustomerId, setFoundCustomerId] = useState('');
+  const [porDiscount, setPorDiscount] = useState(0);
 
   // 🔹 UI
   const [loading, setLoading] = useState(false)
@@ -110,7 +110,7 @@ function App() {
         }
 
         const data = await productsRes.json()
-
+        console.log('Servicios cargados desde API:', data)
         // data esperado: [{ id: "1", name, amount, currency }, ...]
         setServices(data || [])
 
@@ -169,9 +169,14 @@ function App() {
                   client_name: clientName,
                   client_phone: clientPhone,
                   external_id: externalId,
+                  discount: porDiscount,
                 },
               },
-              unit_amount: selectedService.amount,
+              unit_amount:
+                porDiscount > 0
+                  //? selectedService.amount - Math.round(selectedService.amount * porDiscount / 100)
+                  ? selectedService.amount - selectedService.amount_discount
+                  : selectedService.amount,
             },
             quantity: 1,
           },
@@ -293,24 +298,27 @@ function App() {
                   });
                   if (phoneRes.ok) {
                     const data = await phoneRes.json();
+                    console.log('Cliente cargado desde API:', data)
+                    setPorDiscount(Number(data.discount) || 0);
                     if (data.id) {
                       setFoundCustomerId(String(data.id));
-                      setExternalId(String(data.id)); // Asignar externalId para habilitar el botón
+                      setExternalId(String(data.id));
                     }
                     if (data.name) setClientName(data.name);
-                    // Si no hay servicio seleccionado, usar el id encontrado
                     if (!selectedServiceId && data.id) {
                       setSelectedServiceId(String(data.id));
                     }
                   } else {
-                    setClientName(''); // Limpiar si no se encuentra
+                    setClientName('');
                     setFoundCustomerId('');
                     setExternalId('');
+                    setPorDiscount(0);
                   }
                 } catch (err) {
                   setClientName('');
                   setFoundCustomerId('');
                   setExternalId('');
+                  setPorDiscount(0);
                 } finally {
                   setFetchingName(false);
                 }
@@ -318,6 +326,7 @@ function App() {
                 setClientName('');
                 setFoundCustomerId('');
                 setExternalId('');
+                setPorDiscount(0);
               }
             }}
           >
@@ -352,8 +361,17 @@ function App() {
           <div className="summary">
             <span>Total a pagar:</span>
             <strong>
-              {formatCurrency(selectedService.amount, selectedService.currency)}
+              {porDiscount > 0
+                //? formatCurrency(selectedService.amount - Math.round(selectedService.amount * porDiscount / 100), selectedService.currency)
+                ? formatCurrency(selectedService.amount - selectedService.amount_discount, selectedService.currency)
+                : formatCurrency(selectedService.amount, selectedService.currency)}
             </strong>
+            {porDiscount > 0 && (
+
+              /*<div style={{fontSize:'0.9em',color:'#888'}}>Descuento aplicado: {porDiscount}%</div>*/
+              <div style={{fontSize:'0.9em',color:'#888'}}>Descuento aplicado: +/- 20%</div>
+
+            )}
           </div>
         )}
 
