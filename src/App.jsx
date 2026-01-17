@@ -178,7 +178,7 @@ function App() {
                   //? selectedService.amount - Math.round(selectedService.amount * porDiscount / 100)
                   ? selectedService.amount - selectedService.amount_discount
                   : selectedService.amount,
-            },
+            }, 
             quantity: 1,
           },
         ],
