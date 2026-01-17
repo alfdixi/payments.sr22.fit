@@ -1,3 +1,7 @@
+.status-message a {
+  color: white !important;
+  text-decoration: underline;
+}
 
 * {
   box-sizing: border-box;
