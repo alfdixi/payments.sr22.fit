@@ -57,7 +57,7 @@ function App() {
 
     // Mensajes de estado de pago
     const status = params.get('status')
-    if (status === 'success') {
+    if (status === 'success') { 
       setStatusMessage(
         '✅ ¡Pago realizado con éxito! Gracias por tu compra. puede apartar clase en el APP o en la siguiente liga. <a href="https://apartado.sr22.fit/" target="_blank" rel="noopener noreferrer">https://apartado.sr22.fit/</a>'
       )
