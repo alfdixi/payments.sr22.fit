@@ -249,11 +249,15 @@ function App() {
       </p>
 
       {statusMessage && (
-        <div className="status-message" style={{ color: 'white' }} dangerouslySetInnerHTML={{ __html: statusMessage }} />
-      )}
-      // Puedes agregar este CSS globalmente o en tu archivo de estilos:
-      // .status-message a { color: white !important; text-decoration: underline; }
-      {error && <div className="error-message">❌ {error}</div>}
+  <div
+    className="status-message"
+    style={{ color: "white" }}
+    dangerouslySetInnerHTML={{ __html: statusMessage }}
+  />
+)}
+
+{error && <div className="error-message">❌ {error}</div>}
+
 
       <form className="card" onSubmit={handleSubmit}>
         <div className="form-group">
