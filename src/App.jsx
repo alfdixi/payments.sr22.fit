@@ -148,7 +148,7 @@ function App() {
     setStatusMessage('')
     setLoading(true)
 
-    try {
+    try { 
       if (!selectedService) {
         throw new Error('No hay un servicio seleccionado.')
       }
