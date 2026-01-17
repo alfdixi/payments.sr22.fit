@@ -74,7 +74,6 @@ function App() {
     if (phone) setClientPhone(phone)
     if (id) setExternalId(id)
   }, [])
-
   // 2️⃣ Cargar productos desde api.sr22.fit (auth + products) y aplicar idprod
   useEffect(() => {
     const loadServices = async () => {
