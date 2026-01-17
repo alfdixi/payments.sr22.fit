@@ -171,7 +171,7 @@ function App() {
                   client_phone: clientPhone,
                   external_id: externalId,
                   discount: porDiscount,
-                },
+                }, 
               },
               unit_amount:
                 porDiscount > 0
