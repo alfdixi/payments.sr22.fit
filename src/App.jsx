@@ -172,7 +172,7 @@ function App() {
                   external_id: externalId,
                   discount: porDiscount,
                 }, 
-              },
+              }, 
               unit_amount:
                 porDiscount > 0
                   //? selectedService.amount - Math.round(selectedService.amount * porDiscount / 100)
