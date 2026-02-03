@@ -379,7 +379,7 @@ function App() {
             {porDiscount > 0 && (
 
               /*<div style={{fontSize:'0.9em',color:'#888'}}>Descuento aplicado: {porDiscount}%</div>*/
-              <div style={{fontSize:'0.9em',color:'#888'}}>Descuento aplicado: +/- 20%</div>
+              <div style={{fontSize:'0.9em',color:'#888'}}>Descuento: +/- 20%</div>
 
             )}
           </div>
