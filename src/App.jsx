@@ -370,7 +370,7 @@ function App() {
           <div className="summary">
             <span>Total a pagar:</span>
             <strong>
-            {selectedService.amount}-{selectedService.amount_discount} ={selectedService.amount - selectedService.amount_discount}
+            
               {porDiscount > 0
                 //? formatCurrency(selectedService.amount - Math.round(selectedService.amount * porDiscount / 100), selectedService.currency)
                 ? formatCurrency(selectedService.amount - selectedService.amount_discount, selectedService.currency)
