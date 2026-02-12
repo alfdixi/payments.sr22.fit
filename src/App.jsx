@@ -57,7 +57,7 @@ function App() {
 
     // Mensajes de estado de pago
     const status = params.get('status')
-    if (status === 'success') { 
+    if (status === 'success') {
       setStatusMessage(
         '✅ ¡Pago realizado con éxito! Gracias por tu compra. puede apartar clase en el APP o en la siguiente liga. <a href="https://apartado.sr22.fit/" target="_blank" rel="noopener noreferrer">https://apartado.sr22.fit/</a>'
       )
@@ -73,6 +73,57 @@ function App() {
     if (name) setClientName(name)
     if (phone) setClientPhone(phone)
     if (id) setExternalId(id)
+
+    // Buscar cliente por teléfono si viene en la URL
+    if (phone) {
+      (async () => {
+        setFetchingName(true);
+        try {
+          // 1. Obtener token
+          const authRes = await fetch(`${sr22ApiBase}/auth/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ apiKey: apiKeyForToken }),
+          });
+          if (!authRes.ok) throw new Error('Error autenticando');
+          const { token } = await authRes.json();
+          if (!token) throw new Error('No se obtuvo token');
+          // 2. Buscar cliente por teléfono
+          const phoneRes = await fetch(`${sr22ApiBase}/costumer/find-by-phone`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ phone })
+          });
+          if (phoneRes.ok) {
+            const data = await phoneRes.json();
+            setPorDiscount(Number(data.discount) || 0);
+            if (data.id) {
+              setFoundCustomerId(String(data.id));
+              setExternalId(String(data.id));
+            }
+            if (data.name) setClientName(data.name);
+            if (!selectedServiceId && data.id) {
+              setSelectedServiceId(String(data.id));
+            }
+          } else {
+            setClientName('');
+            setFoundCustomerId('');
+            setExternalId('');
+            setPorDiscount(0);
+          }
+        } catch (err) {
+          setClientName('');
+          setFoundCustomerId('');
+          setExternalId('');
+          setPorDiscount(0);
+        } finally {
+          setFetchingName(false);
+        }
+      })();
+    }
   }, [])
   // 2️⃣ Cargar productos desde api.sr22.fit (auth + products) y aplicar idprod
   useEffect(() => { 
@@ -363,7 +414,6 @@ function App() {
             readOnly
           />
         </div>
-
         
 
         {selectedService && (
