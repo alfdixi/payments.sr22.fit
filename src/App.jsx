@@ -225,10 +225,11 @@ function App() {
                 }, 
               }, 
               unit_amount:
-                porDiscount > 0
-                  //? selectedService.amount - Math.round(selectedService.amount * porDiscount / 100)
+                porDiscount === 1
                   ? selectedService.amount - selectedService.amount_discount
-                  : selectedService.amount,
+                  : porDiscount === 2
+                    ? selectedService.amount - selectedService.amount_discount2
+                    : selectedService.amount,
             }, 
             quantity: 1,
           },
@@ -421,16 +422,17 @@ function App() {
             <span>Total a pagar:</span>
             <strong>
             
-              {porDiscount > 0
-                //? formatCurrency(selectedService.amount - Math.round(selectedService.amount * porDiscount / 100), selectedService.currency)
+              {porDiscount === 1
                 ? formatCurrency(selectedService.amount - selectedService.amount_discount, selectedService.currency)
-                : formatCurrency(selectedService.amount, selectedService.currency)}
+                : porDiscount === 2
+                  ? formatCurrency(selectedService.amount - selectedService.amount_discount2, selectedService.currency)
+                  : formatCurrency(selectedService.amount, selectedService.currency)}
             </strong>
-            {porDiscount > 0 && (
-
-              /*<div style={{fontSize:'0.9em',color:'#888'}}>Descuento aplicado: {porDiscount}%</div>*/
+            {porDiscount === 1 && (
               <div style={{fontSize:'0.9em',color:'#888'}}>Descuento: +/- 20%</div>
-
+            )}
+            {porDiscount === 2 && (
+              <div style={{fontSize:'0.9em',color:'#888'}}>Descuento: +/- 10%</div>
             )}
           </div>
         )}
